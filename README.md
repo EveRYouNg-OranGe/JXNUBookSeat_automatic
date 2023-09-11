@@ -87,7 +87,8 @@ beginTime=1688857200&duration=10800&seats%5B0%5D=座位id&is_recommend=1&seatBoo
 `/Seat/Index/bookingInfo?bookingId=13584476&fromType=4&LAB_JSON=1`
 
 
-
+### 更新
+- 由于考试高峰期，自习室座位紧张，每天晚上十点座位被大量预约，座位是否预约成功与手速和运气有关，故添加定时预约，建议22点前几分钟运行程序。多开窗口同时运行有利于提高预约成功概率。
 
 
 
