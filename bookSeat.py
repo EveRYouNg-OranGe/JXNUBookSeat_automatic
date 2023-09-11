@@ -5,8 +5,11 @@
 # @Software : PyCharm
 # @JXNU自习室抢座脚本
 
+import jsonpath
 import requests
 from datetime import datetime, timedelta
+
+import time
 
 baseURL = "https://jxnu.huitu.zhishulib.com"
 count = 1
@@ -80,16 +83,31 @@ class User(object):
             "space_category[content_id]": self.roomID
         }
         res = self.session.post(url=searchURL, data=data, headers=self.headers)
-
         if res.status_code == 200:
+            print("找到空位")
             json = res.json()
         else:
             print("没有空位")
             return
-        seats = json["data"]["bestPairSeats"]["seats"][0]["id"]
+        
+        # print(type(json))
+        # availableSeatsTitle = jsonpath.jsonpath(json, '$.data.POIs[?(@.state == 0)].title')
+        # if availableSeatsTitle:
+            # print("Find following seats!")
+            # availableSeatsID = jsonpath.jsonpath(json, '$.data.POIs[?(@.state == 0)].id')
+            # print(availableSeatsTitle, "Over", len(availableSeatsTitle))
+            # print(availableSeatsID, "Over", len(availableSeatsID))
+            # chooseSeats = input("Enter seat number >>>")
+        # else:
+            # print("No seats can be use!")
+            
+        seats = json["data"]["bestPairSeats"]["seats"][0]["id"] 
+        print("推荐座位 > ",json["data"]["bestPairSeats"]["seats"][0]["title"])
         seatBookers = json["allContent"]["children"][-1]["children"]["children"][-1]["userInfo"]["id"]
         self.seatBookers = seatBookers
         self.seats = seats
+        
+        # exit(0)
         self.bookSeats()
 
     # 抢座位
@@ -134,17 +152,35 @@ class User(object):
 
 
 if __name__ == "__main__":
-    username = "xxxx"  # 学号
-    password = "yyyy"  # 密码
-    beginTime = hour2Data(9)  # 开始时间
-    duration = 3  # 持续时间
+    username = "202026003139"  # 学号
+    password = "123612244896Xtl"  # 密码
+    inputBegin = int(input("开始时间（整时）："))
+    beginTime = hour2Data(inputBegin)  # 开始时间
+    duration = int(input("结束时间（整时）："))-inputBegin  # 持续时间
+    # duration = 3
     duration = duration * 3600
     num = 1  # 人数
-    roomID = room["202"]  # 自习室ID
-    categoryId = 591  # 填写自己的categoryId
+    roomNum = input("自习室ID：")
+    # roomNum = "202"
+    roomID = room[roomNum]  # 自习室ID
+    categoryId = 139  # 填写自己的categoryId
+    settingTime = "22:00" # 自动开始预约时间
 
     user = User(username, password, beginTime, duration, num, roomID, categoryId)
 
     user.login()
+    delayFac = 0
     while True:
-        user.searchSeats()
+        currentTime = time.strftime('%H:%M:%S', time.localtime())
+        if int(currentTime[:2]) >= int(settingTime[:2]):
+            print("[+]开始预约")
+            user.searchSeats()
+        else:
+            if delayFac%25==0:
+                print(currentTime, "->", settingTime)
+                delayFac=1
+            else:
+                delayFac+=1
+        
+        time.sleep(0.2)  # 查询时间间隔
+            
